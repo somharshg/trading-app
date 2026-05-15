@@ -25,7 +25,7 @@ export default function App() {
     if (file) formData.append("file", file)
 
     try {
-      const res = await fetch("http://localhost:8000/backtest", {
+      const res = await fetch("https://trading-app-3cv8.onrender.com/backtest", {
         method: "POST",
         body: formData
       })
