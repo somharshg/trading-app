@@ -1,3 +1,4 @@
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
 import { useState } from "react"
 
 export default function App() {
@@ -157,6 +158,21 @@ export default function App() {
               </div>
             ))}
           </div>
+
+{result.equity_curve && result.equity_curve.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-3 text-gray-300">Equity Curve</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={result.equity_curve.map((v, i) => ({ trade: i, value: Math.round(v) }))}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="trade" stroke="#9CA3AF" label={{ value: "Trade #", position: "insideBottom", offset: -2, fill: "#9CA3AF" }} />
+                  <YAxis stroke="#9CA3AF" tickFormatter={v => "₹" + v.toLocaleString()} />
+                  <Tooltip formatter={v => "₹" + v.toLocaleString()} labelFormatter={l => "Trade " + l} contentStyle={{ backgroundColor: "#1F2937", border: "1px solid #374151" }} />
+                  <Line type="monotone" dataKey="value" stroke="#22C55E" dot={false} strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
 
           {result.trades && result.trades.length > 0 && (
             <div className="mt-6">
