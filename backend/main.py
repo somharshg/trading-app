@@ -84,6 +84,12 @@ async def backtest(
     if not strategy_text.strip():
         return {"error": "No strategy provided"}
 
+    # Validate period vs interval compatibility
+    intraday_intervals = ["1m", "2m", "5m", "15m", "30m", "60m", "1h"]
+    intraday_max_periods = ["1d", "5d", "1mo"]
+    if interval in intraday_intervals and period not in intraday_max_periods:
+        return {"error": f"For {interval} interval, maximum period is 1 month. Please select 1 Week or 1 Month."}
+
     try:
         rules = parse_strategy_with_groq(strategy_text)
     except Exception as e:

@@ -42,9 +42,6 @@ def run_range_breakout(df: pd.DataFrame, rules: dict, capital: float, fee_pct: f
         pdh = float(yesterday_data['High'].max())
         pdl = float(yesterday_data['Low'].min())
 
-        long_level = max(cdh, pdh)
-        short_level = min(cdl, pdl)
-
         filtered = today_data[
             (today_data.index.hour > hour) |
             ((today_data.index.hour == hour) & (today_data.index.minute >= minute))
@@ -59,10 +56,10 @@ def run_range_breakout(df: pd.DataFrame, rules: dict, capital: float, fee_pct: f
             date_str = idx.strftime("%Y-%m-%d")
             time_str = idx.strftime("%H:%M")
 
-            if close > long_level:
+            if close > cdh or close > pdh:
                 direction = "long"
                 entry_price = close
-            elif close < short_level:
+            elif close < cdl or close < pdl:
                 direction = "short"
                 entry_price = close
             else:
