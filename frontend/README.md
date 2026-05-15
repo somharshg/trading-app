@@ -1,16 +1,31 @@
-# React + Vite
+# Strategy Backtester
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web app to backtest trading strategies against NSE/BSE historical data using plain English input.
 
-Currently, two official plugins are available:
+## Features
+- Plain text strategy input (powered by Groq AI)
+- PDF and Word document upload
+- EMA, RSI indicator strategies
+- Range Breakout strategies (CDH, CDL, PDH, PDL)
+- Performance analytics: Win rate, P&L, Sharpe ratio, Drawdown
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Setup
 
-## React Compiler
+### Backend
+cd backend
+python -m venv venv
+venv\Scripts\activate
+pip install fastapi uvicorn yfinance pandas numpy python-multipart pypdf2 python-docx groq python-dotenv
+Create a .env file with: GROQ_API_KEY=your_key_here
+uvicorn main:app --reload
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Frontend
+cd frontend
+npm install
+npm run dev
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Usage
+1. Enter NSE stock symbol (e.g. RELIANCE, TCS)
+2. Set capital, period, interval
+3. Type your strategy in plain English
+4. Click Run Backtest
