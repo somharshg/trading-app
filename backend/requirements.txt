@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+yfinance
+pandas
+numpy
+python-multipart
+pypdf2
+python-docx
+groq
+python-dotenv
