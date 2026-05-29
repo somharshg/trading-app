@@ -28,12 +28,13 @@ def fetch_data(symbol: str, period: str = "1y", interval: str = "1d") -> pd.Data
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
 
-    # Convert UTC to IST
+    # Convert to IST and remove timezone info for clean comparison
     if df.index.tzinfo is not None:
-        df.index = df.index.tz_convert("Asia/Kolkata")
+        df.index = df.index.tz_convert("Asia/Kolkata").tz_localize(None)
     else:
-        df.index = df.index.tz_localize("Asia/Kolkata")
+        df.index = df.index.tz_localize("UTC").tz_convert("Asia/Kolkata").tz_localize(None)
 
+df = df[['Open', 'High', 'Low', 'Close']].copy()
     df.dropna(inplace=True)
     return df
 
