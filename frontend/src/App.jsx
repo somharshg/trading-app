@@ -1,6 +1,8 @@
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
 import { useState, useEffect } from "react"
-import { supabase } from "./supabase"
+import { auth, provider, db } from "./supabase"
+import { signInWithPopup, signOut } from "firebase/auth"
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore"
 
 export default function App() {
   const [user, setUser] = useState(null)
@@ -16,52 +18,42 @@ export default function App() {
   const [error, setError] = useState("")
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) fetchUsage(session.user.id)
+    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+      setUser(firebaseUser ?? null)
+      if (firebaseUser) fetchUsage(firebaseUser.uid)
     })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) fetchUsage(session.user.id)
-    })
-    return () => subscription.unsubscribe()
+    return () => unsubscribe()
   }, [])
 
-  const fetchUsage = async (userId) => {
+ const fetchUsage = async (userId) => {
     const today = new Date().toISOString().split("T")[0]
-    const { data } = await supabase
-      .from("usage")
-      .select("count")
-      .eq("user_id", userId)
-      .eq("date", today)
-      .single()
-    setUsageCount(data?.count ?? 0)
+    const ref = doc(db, "usage", `${userId}_${today}`)
+    const snap = await getDoc(ref)
+    setUsageCount(snap.exists() ? snap.data().count : 0)
   }
 
   const incrementUsage = async (userId) => {
     const today = new Date().toISOString().split("T")[0]
-    const { data } = await supabase
-      .from("usage")
-      .select("count")
-      .eq("user_id", userId)
-      .eq("date", today)
-      .single()
+    const ref = doc(db, "usage", `${userId}_${today}`)
+    const snap = await getDoc(ref)
 
-    if (data) {
-      await supabase.from("usage").update({ count: data.count + 1 }).eq("user_id", userId).eq("date", today)
-      setUsageCount(data.count + 1)
+    if (snap.exists()) {
+      await updateDoc(ref, { count: snap.data().count + 1 })
+      setUsageCount(snap.data().count + 1)
     } else {
-      await supabase.from("usage").insert({ user_id: userId, date: today, count: 1 })
+      await setDoc(ref, { user_id: userId, date: today, count: 1 })
       setUsageCount(1)
     }
   }
 
   const loginWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({ provider: "google" })
+    const result = await signInWithPopup(auth, provider)
+    setUser(result.user)
+    fetchUsage(result.user.uid)
   }
 
   const logout = async () => {
-    await supabase.auth.signOut()
+    await signOut(auth)
     setUser(null)
     setResult(null)
   }
@@ -94,7 +86,7 @@ export default function App() {
         setError(data.error)
       } else {
         setResult(data)
-        await incrementUsage(user.id)
+        await incrementUsage(user.uid)
       }
     } catch (e) {
       setError("Backend not reachable. Make sure it is running.")
